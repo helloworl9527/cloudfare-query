@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="referrer" content="no-referrer">
+    <title data-i18n="admin.title">query · 管理</title>
+    <link rel="stylesheet" href="/admin/app.css">
+    <script src="/admin/app.js" defer></script>
+  </head>
+  <body>
+    <header class="admin-header">
+      <a class="brand" href="/admin" data-i18n-aria-label="admin.brandAriaLabel" aria-label="query 管理首页">
+        <span class="brand-mark" aria-hidden="true">q</span>
+        <span>query</span>
+      </a>
+      <div class="header-actions">
+        <span class="area-label" data-i18n="admin.areaLabel">管理员</span>
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button class="lang-button" type="button" data-lang="zh" aria-pressed="true">简</button>
+          <button class="lang-button" type="button" data-lang="zh-Hant" aria-pressed="false">繁</button>
+          <button class="lang-button" type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-shell">
+      <section id="login-view" class="login-view" aria-labelledby="login-heading" hidden>
+        <div class="login-card">
+          <p class="eyebrow" data-i18n="login.eyebrow">受保护区域</p>
+          <h1 id="login-heading" data-i18n="login.heading">管理员登录</h1>
+          <p class="muted" data-i18n="login.intro">使用 query 应用密码继续。登录会话最长有效 8 小时。</p>
+          <form id="login-form">
+            <label for="admin-password" data-i18n="login.passwordLabel">应用密码</label>
+            <input
+              id="admin-password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              maxlength="1024"
+              required
+              autofocus
+            >
+            <button id="login-button" class="button button-primary button-full" type="submit" data-i18n="login.submit">登录</button>
+          </form>
+          <div id="login-status" class="notice" role="status" aria-live="polite" hidden></div>
+        </div>
+      </section>
+
+      <section id="admin-view" hidden>
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow" data-i18n="bindings.eyebrow">绑定管理</p>
+            <h1 data-i18n="bindings.heading">邮箱绑定</h1>
+            <p id="session-expiry" class="muted"></p>
+          </div>
+          <button id="logout-button" class="button button-secondary" type="button" data-i18n="bindings.logout">退出登录</button>
+        </div>
+
+        <div id="global-status" class="notice" role="status" aria-live="polite" hidden></div>
+
+        <section class="panel create-panel" aria-labelledby="create-heading">
+          <div class="panel-heading">
+            <div>
+              <h2 id="create-heading" data-i18n="create.heading">创建绑定</h2>
+              <p data-i18n="create.intro">关联一个外部邮箱和一段地址 JWT。</p>
+            </div>
+          </div>
+          <form id="create-form" class="binding-form">
+            <div class="field">
+              <label for="create-external-id" data-i18n="create.externalIdLabel">外部邮箱</label>
+              <input
+                id="create-external-id"
+                name="external_id"
+                type="email"
+                inputmode="email"
+                autocomplete="off"
+                autocapitalize="none"
+                spellcheck="false"
+                maxlength="254"
+                placeholder="customer@example.com"
+                required
+              >
+            </div>
+            <div class="field field-wide">
+              <label for="create-address-jwt" data-i18n="create.jwtLabel">地址 JWT</label>
+              <textarea
+                id="create-address-jwt"
+                name="address_jwt"
+                rows="3"
+                maxlength="16384"
+                autocomplete="off"
+                spellcheck="false"
+                data-i18n-placeholder="create.jwtPlaceholder"
+                placeholder="从上游后台 show_password 取得的地址 JWT"
+                required
+              ></textarea>
+              <p class="field-help" data-i18n="create.jwtHelp">query 不存储上游管理员密码；请手动从上游后台取出该临时邮箱的 JWT 并粘贴到此处，临时邮箱地址会从 JWT 中自动解析，系统会向上游校验后再保存。</p>
+            </div>
+            <div class="field field-wide">
+              <label for="create-note" data-i18n="create.noteLabel">备注 <span class="optional" data-i18n="common.optional">可选</span></label>
+              <textarea id="create-note" name="note" rows="2" maxlength="500"></textarea>
+            </div>
+            <div class="form-actions field-wide">
+              <button id="create-button" class="button button-primary" type="submit" data-i18n="create.submit">创建并校验凭据</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel list-panel" aria-labelledby="list-heading">
+          <div class="panel-heading list-panel-heading">
+            <div>
+              <h2 id="list-heading" data-i18n="list.heading">已有绑定</h2>
+              <p id="binding-count" data-i18n="list.loading">正在读取…</p>
+            </div>
+            <button id="reload-button" class="button button-secondary button-compact" type="button" data-i18n="list.reload">刷新列表</button>
+          </div>
+
+          <form id="search-form" class="search-form" role="search">
+            <label class="visually-hidden" for="search-input" data-i18n="list.searchLabel">搜索绑定</label>
+            <input
+              id="search-input"
+              name="search"
+              type="search"
+              autocomplete="off"
+              maxlength="254"
+              data-i18n-placeholder="list.searchPlaceholder"
+              placeholder="搜索外部邮箱、临时邮箱或备注"
+            >
+            <button class="button button-primary" type="submit" data-i18n="list.search">搜索</button>
+            <button id="clear-search-button" class="button button-secondary" type="button" data-i18n="list.clear">清除</button>
+          </form>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col" data-i18n="table.externalId">外部邮箱</th>
+                  <th scope="col" data-i18n="table.address">临时邮箱</th>
+                  <th scope="col" data-i18n="table.credential">凭据</th>
+                  <th scope="col" data-i18n="table.noteUpdated">备注 / 更新</th>
+                  <th scope="col"><span class="visually-hidden" data-i18n="table.actions">操作</span></th>
+                </tr>
+              </thead>
+              <tbody id="bindings-body"></tbody>
+            </table>
+          </div>
+
+          <div id="empty-bindings" class="empty-state" hidden data-i18n="list.empty">暂无匹配的绑定。</div>
+
+          <nav class="pager" aria-label="绑定列表分页">
+            <button id="previous-page" class="button button-secondary button-compact" type="button" disabled data-i18n="list.previous">上一页</button>
+            <span id="page-label"></span>
+            <button id="next-page" class="button button-secondary button-compact" type="button" disabled data-i18n="list.next">下一页</button>
+          </nav>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="edit-dialog" aria-labelledby="edit-heading">
+      <form id="edit-form" class="dialog-card">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow" data-i18n="edit.eyebrow">编辑绑定</p>
+            <h2 id="edit-heading" data-i18n="edit.heading">更新绑定信息</h2>
+          </div>
+          <button id="edit-close-button" class="icon-button" type="button" data-i18n-aria-label="edit.closeAriaLabel" aria-label="关闭编辑窗口">×</button>
+        </div>
+        <input id="edit-id" name="id" type="hidden">
+        <input id="edit-version" name="version" type="hidden">
+        <div class="field">
+          <label for="edit-external-id" data-i18n="edit.externalIdLabel">外部邮箱</label>
+          <input
+            id="edit-external-id"
+            name="external_id"
+            type="email"
+            inputmode="email"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+            maxlength="254"
+            required
+          >
+        </div>
+        <div class="field">
+          <label for="edit-address" data-i18n="edit.addressLabel">当前临时邮箱</label>
+          <input id="edit-address" type="text" readonly disabled>
+          <p class="field-help" data-i18n="edit.addressHelp">临时邮箱地址由地址 JWT 决定，不能直接编辑；如需更换邮箱，在下方粘贴新邮箱对应的 JWT 即可自动更新。</p>
+        </div>
+        <div class="field">
+          <label for="edit-address-jwt" data-i18n="edit.jwtLabel">地址 JWT <span class="optional" data-i18n="edit.jwtOptional">仅更换凭据/邮箱时填写</span></label>
+          <textarea
+            id="edit-address-jwt"
+            name="address_jwt"
+            rows="3"
+            maxlength="16384"
+            autocomplete="off"
+            spellcheck="false"
+            data-i18n-placeholder="edit.jwtPlaceholder"
+            placeholder="留空则不更改凭据；粘贴新 JWT 可更新凭据，也可用来更换绑定的临时邮箱"
+          ></textarea>
+        </div>
+        <div class="field">
+          <label for="edit-note" data-i18n="edit.noteLabel">备注 <span class="optional" data-i18n="common.optional">可选</span></label>
+          <textarea id="edit-note" name="note" rows="3" maxlength="500"></textarea>
+        </div>
+        <div id="edit-status" class="notice" role="status" aria-live="polite" hidden></div>
+        <div class="dialog-actions">
+          <button id="edit-cancel-button" class="button button-secondary" type="button" data-i18n="edit.cancel">取消</button>
+          <button id="edit-save-button" class="button button-primary" type="submit" data-i18n="edit.save">保存更改</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

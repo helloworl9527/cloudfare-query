@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="referrer" content="no-referrer">
+    <title data-i18n="page.title">query · 邮件查询</title>
+    <link rel="stylesheet" href="/app.css">
+    <script src="/app.js" type="module"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" data-i18n-aria-label="page.brandAriaLabel" aria-label="query 首页">
+        <span class="brand-mark" aria-hidden="true">q</span>
+        <span>query</span>
+      </a>
+      <div class="header-actions">
+        <span class="site-label" data-i18n="page.siteLabel">邮件查询</span>
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button class="lang-button" type="button" data-lang="zh" aria-pressed="true">简</button>
+          <button class="lang-button" type="button" data-lang="zh-Hant" aria-pressed="false">繁</button>
+          <button class="lang-button" type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <p class="intro" data-i18n="hero.intro">输入邮箱，可查看该最近 10 封邮件内容。</p>
+      </section>
+
+      <section class="tutorial" aria-labelledby="tutorial-heading">
+        <h2 id="tutorial-heading" data-i18n="tutorial.heading">使用教程</h2>
+        <ol class="tutorial-steps">
+          <li data-i18n="tutorial.step1">在下方输入邮箱地址。</li>
+          <li data-i18n="tutorial.step2">点击“查询”，查看最近 10 封邮件。</li>
+          <li data-i18n="tutorial.step3">邮件默认以 HTML 原貌显示（沙箱隔离），远程图片等外部内容不会加载。</li>
+          <li data-i18n="tutorial.step4">收件箱有新邮件时，点击“手动刷新”重新获取。</li>
+        </ol>
+      </section>
+
+      <section class="query-card" aria-labelledby="query-heading">
+        <h2 id="query-heading" class="visually-hidden" data-i18n="query.heading">查询条件</h2>
+        <form id="query-form" novalidate>
+          <label for="external-id" data-i18n="query.externalIdLabel">外部邮箱</label>
+          <div class="query-controls">
+            <input
+              id="external-id"
+              name="external_id"
+              type="email"
+              inputmode="email"
+              autocomplete="off"
+              list="external-id-history"
+              autocapitalize="none"
+              spellcheck="false"
+              maxlength="254"
+              placeholder="name@example.com"
+              required
+            >
+            <datalist id="external-id-history"></datalist>
+            <button id="query-button" class="button button-primary" type="submit" data-i18n="query.submit">查询</button>
+            <button id="refresh-button" class="button button-secondary" type="button" disabled data-i18n="query.refresh">手动刷新</button>
+          </div>
+          <p class="field-hint" data-i18n-html="query.hint">邮箱按大小写不敏感方式匹配，不会移除圆点或 <span lang="en">+tag</span>。</p>
+          <p class="field-hint field-hint-secondary" data-i18n="query.historyHint">查询成功的邮箱会保存在当前浏览器，可在下方选择或删除。</p>
+          <section id="email-history-panel" class="email-history" aria-labelledby="email-history-heading" hidden>
+            <div class="email-history-head">
+              <h3 id="email-history-heading" data-i18n="history.heading">本地查询记录</h3>
+              <button id="clear-email-history" class="email-history-clear" type="button" data-i18n="history.clear">清空全部</button>
+            </div>
+            <ul id="email-history-list" class="email-history-list"></ul>
+          </section>
+        </form>
+
+        <div id="query-status" class="status" role="status" aria-live="polite" hidden></div>
+      </section>
+
+      <section id="results" class="results" aria-labelledby="results-heading" hidden>
+        <div class="results-heading-row">
+          <div>
+            <p class="eyebrow" data-i18n="results.eyebrow">收件箱</p>
+            <h2 id="results-heading" data-i18n="results.heading">最近邮件</h2>
+          </div>
+          <p id="results-summary" class="results-summary"></p>
+        </div>
+        <ol id="mail-list" class="mail-list"></ol>
+      </section>
+    </main>
+  </body>
+</html>

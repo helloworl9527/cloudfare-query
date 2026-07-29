@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly nf-query bindings backup
+
+[Timer]
+OnCalendar=Sun *-*-* 03:05:00 UTC
+AccuracySec=15min
+Persistent=true
+Unit=nf-query-backup.service
+
+[Install]
+WantedBy=timers.target

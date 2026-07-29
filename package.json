@@ -1,0 +1,28 @@
+{
+  "name": "nf-query",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isolated public/admin gateway for cloudflare_temp_email",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "scripts": {
+    "start:public": "node src/public-server.js",
+    "start:admin": "node src/admin-server.js",
+    "db:migrate": "node src/cli.js migrate",
+    "admin:hash-password": "node src/cli.js hash-password",
+    "credentials:refetch-all": "node src/cli.js refetch-all",
+    "test": "node --test --test-concurrency=1",
+    "test:unit": "node --test --test-concurrency=1 test/unit",
+    "test:integration": "node --test --test-concurrency=1 test/integration"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.0.8",
+    "better-sqlite3": "12.11.1",
+    "hono": "4.12.29",
+    "html-to-text": "10.0.0",
+    "htmlparser2": "10.1.0",
+    "postal-mime": "2.7.5"
+  }
+}
