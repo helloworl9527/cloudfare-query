@@ -1,4 +1,4 @@
-# nf-query
+# cloudfare-query
 
 `nf-query` 是部署在自有 Ubuntu 主机上的临时邮箱查询网关，适配上游
 [`cloudflare_temp_email` 提交 `565bb839`](https://github.com/dreamhunter2333/cloudflare_temp_email/commit/565bb839dbe62f879ac11f1d86396bdd79f5213e)，不修改上游代码。
