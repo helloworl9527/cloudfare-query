@@ -44,8 +44,8 @@ const translations = {
     "status.connectFailed": "无法连接查询服务，请稍后重试。",
     "results.summary": "当前最新邮件",
     "mail.noSubject": "（无主题）",
-    "mail.from": "发件人：{0}",
-    "mail.fromUnknown": "未知",
+    "mail.codeHeading": "验证码",
+    "mail.verificationPrompt": "点击下方进行验证",
     "mail.noBody": "（无正文）",
     "mail.viewLabel": "显示方式",
     "mail.viewHtml": "HTML",
@@ -65,7 +65,6 @@ const translations = {
     "badge.htmlToText": "HTML 已转为纯文本",
     "badge.fallback": "正文为降级解析结果",
     "badge.htmlTruncated": "HTML 正文已截断",
-    "badge.imagesBlocked": "已屏蔽 {0} 张远程图片",
     "error.400": "外部邮箱格式不正确。",
     "error.404": "未找到对应的邮箱绑定，请检查输入。",
     "error.502": "上游邮件服务暂时不可用，请稍后重试。",
@@ -105,8 +104,8 @@ const translations = {
     "status.connectFailed": "無法連線查詢服務，請稍後重試。",
     "results.summary": "目前最新郵件",
     "mail.noSubject": "（無主旨）",
-    "mail.from": "寄件者：{0}",
-    "mail.fromUnknown": "未知",
+    "mail.codeHeading": "驗證碼",
+    "mail.verificationPrompt": "點擊下方進行驗證",
     "mail.noBody": "（無內容）",
     "mail.viewLabel": "顯示方式",
     "mail.viewHtml": "HTML",
@@ -126,7 +125,6 @@ const translations = {
     "badge.htmlToText": "HTML 已轉為純文字",
     "badge.fallback": "內容為降級解析結果",
     "badge.htmlTruncated": "HTML 內容已截斷",
-    "badge.imagesBlocked": "已封鎖 {0} 張遠端圖片",
     "error.400": "外部郵箱格式不正確。",
     "error.404": "找不到對應的郵箱綁定，請檢查輸入。",
     "error.502": "上游郵件服務暫時無法使用，請稍後重試。",
@@ -166,8 +164,8 @@ const translations = {
     "status.connectFailed": "Could not reach the query service, please retry later.",
     "results.summary": "Newest message",
     "mail.noSubject": "(no subject)",
-    "mail.from": "From: {0}",
-    "mail.fromUnknown": "unknown",
+    "mail.codeHeading": "Verification code",
+    "mail.verificationPrompt": "Click below to verify",
     "mail.noBody": "(no body)",
     "mail.viewLabel": "View as",
     "mail.viewHtml": "HTML",
@@ -187,7 +185,6 @@ const translations = {
     "badge.htmlToText": "Converted from HTML to text",
     "badge.fallback": "Body is a degraded parse result",
     "badge.htmlTruncated": "HTML body truncated",
-    "badge.imagesBlocked": "{0} remote image(s) blocked",
     "error.400": "The external email format is invalid.",
     "error.404": "No matching binding was found, please check your input.",
     "error.502": "The upstream mail service is temporarily unavailable, please retry.",
@@ -523,11 +520,7 @@ function createMailCard(mail) {
   time.className = "mail-time";
   time.textContent = displayMailTime(mail);
 
-  const from = document.createElement("p");
-  from.className = "mail-from";
-  from.textContent = t("mail.from", formatSender(mail.from ?? mail.from_address ?? mail.sender) || t("mail.fromUnknown"));
-
-  head.append(subject, time, from);
+  head.append(subject, time);
   item.append(head);
 
   const badges = mailBadges(mail);
@@ -552,6 +545,11 @@ function createMatchedMailBody(mail) {
   if (kind === "verification_code") {
     const code = extractVerificationCode(mail);
     if (code) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "mail-code";
+      const heading = document.createElement("p");
+      heading.className = "mail-action-heading";
+      heading.textContent = t("mail.codeHeading");
       const button = document.createElement("button");
       button.type = "button";
       button.className = "mail-code-button";
@@ -566,7 +564,8 @@ function createMatchedMailBody(mail) {
           button.title = t("mail.copyCode");
         }
       });
-      return button;
+      wrapper.append(heading, button);
+      return wrapper;
     }
     const unavailable = document.createElement("p");
     unavailable.className = "mail-body";
@@ -578,9 +577,12 @@ function createMatchedMailBody(mail) {
     if (link) {
       const wrapper = document.createElement("div");
       wrapper.className = "mail-verification-link";
+      const heading = document.createElement("p");
+      heading.className = "mail-action-heading";
+      heading.textContent = t("mail.verificationPrompt");
       const frame = createMailFrame(link.html);
       frame.title = t("mail.openVerification");
-      wrapper.append(frame);
+      wrapper.append(heading, frame);
       return wrapper;
     }
     const unavailable = document.createElement("p");
@@ -789,9 +791,6 @@ function mailBadges(mail) {
   if (mail.html_truncated === true) {
     labels.push(t("badge.htmlTruncated"));
   }
-  if (Number.isFinite(mail.blocked_images) && mail.blocked_images > 0) {
-    labels.push(t("badge.imagesBlocked", mail.blocked_images));
-  }
 
   const parseStatus = safeText(mail.parse_status ?? mail.parsing_status).toLowerCase();
   if (["failed", "error", "parse_failed", "parse_error"].includes(parseStatus)) {
@@ -829,24 +828,6 @@ function extractMails(payload) {
     }
   }
   return [];
-}
-
-function formatSender(value) {
-  if (typeof value === "string") {
-    return value;
-  }
-  if (Array.isArray(value)) {
-    return value.map(formatSender).filter(Boolean).join(", ");
-  }
-  if (isRecord(value)) {
-    const name = safeText(value.name);
-    const address = safeText(value.address ?? value.email);
-    if (name && address) {
-      return `${name} <${address}>`;
-    }
-    return address || name;
-  }
-  return "";
 }
 
 function safeText(value) {

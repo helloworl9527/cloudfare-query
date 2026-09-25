@@ -465,14 +465,6 @@ input:focus {
   white-space: nowrap;
 }
 
-.mail-from {
-  grid-column: 1 / -1;
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.55;
-}
-
 .mail-badges {
   display: flex;
   flex-wrap: wrap;
@@ -496,8 +488,19 @@ input:focus {
   margin-top: 20px;
 }
 
-.mail-code-button {
+.mail-code,
+.mail-verification-link {
   margin-top: 20px;
+}
+
+.mail-action-heading {
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.mail-code-button {
   min-width: 180px;
   padding: 15px 24px;
   border: 1px solid var(--accent);
@@ -514,10 +517,6 @@ input:focus {
 .mail-code-button:hover,
 .mail-code-button:focus-visible {
   background: var(--accent-deep);
-}
-
-.mail-verification-link {
-  margin-top: 20px;
 }
 
 .view-switch {
@@ -635,8 +634,7 @@ input:focus {
     grid-template-columns: 1fr;
   }
 
-  .mail-time,
-  .mail-from {
+  .mail-time {
     grid-column: 1;
   }
 
