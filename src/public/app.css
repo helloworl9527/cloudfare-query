@@ -563,6 +563,14 @@ input:focus {
   background: var(--surface);
 }
 
+.mail-frame-compact {
+  width: 1px;
+  height: 1px;
+  margin-top: 0;
+  border: 0;
+  border-radius: 0;
+}
+
 .mail-body-views > .mail-body {
   margin-top: 14px;
 }

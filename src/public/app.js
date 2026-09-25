@@ -231,6 +231,11 @@ img[data-nfq-blocked] {
   font-style: italic;
 }
 `;
+const MAIL_COMPACT_FRAME_CSS = `
+html, body { width: max-content; min-width: 0; }
+body { padding: 0; }
+table { width: auto !important; }
+`;
 const LANG_STORAGE_KEY = "nfq_public_lang";
 const storedLang = localStorage.getItem(LANG_STORAGE_KEY);
 let currentLang = SUPPORTED_LANGS.includes(storedLang) ? storedLang : "zh";
@@ -580,7 +585,7 @@ function createMatchedMailBody(mail) {
       const heading = document.createElement("p");
       heading.className = "mail-action-heading";
       heading.textContent = t("mail.verificationPrompt");
-      const frame = createMailFrame(link.html);
+      const frame = createMailFrame(link.html, { compact: true });
       frame.title = t("mail.openVerification");
       wrapper.append(heading, frame);
       return wrapper;
@@ -711,9 +716,9 @@ function createViewSwitch(frame, textBody) {
   return group;
 }
 
-function createMailFrame(html) {
+function createMailFrame(html, { compact = false } = {}) {
   const frame = document.createElement("iframe");
-  frame.className = "mail-frame";
+  frame.className = compact ? "mail-frame mail-frame-compact" : "mail-frame";
   frame.title = t("mail.frameTitle");
   frame.loading = "lazy";
   // No `allow-scripts`: nothing inside the mail can execute, which is the
@@ -726,16 +731,16 @@ function createMailFrame(html) {
   );
   frame.setAttribute("referrerpolicy", "no-referrer");
   frame.addEventListener("load", () => fitFrame(frame));
-  frame.srcdoc = mailDocument(html);
+  frame.srcdoc = mailDocument(html, { compact });
   return frame;
 }
 
-function mailDocument(html) {
+function mailDocument(html, { compact = false } = {}) {
   return `<!doctype html><html lang="${escapeHtml(LANG_DOC_TAG[currentLang] || "zh-CN")}"><head>`
     + '<meta charset="utf-8">'
     + '<meta name="referrer" content="no-referrer">'
     + '<base target="_blank">'
-    + `<style>${MAIL_FRAME_CSS}</style>`
+    + `<style>${MAIL_FRAME_CSS}${compact ? MAIL_COMPACT_FRAME_CSS : ""}</style>`
     + `</head><body>${html}</body></html>`;
 }
 
@@ -744,13 +749,19 @@ function fitFrame(frame) {
   try {
     const doc = frame.contentDocument;
     if (!doc) return;
+    if (frame.classList.contains("mail-frame-compact")) {
+      const availableWidth = frame.parentElement?.clientWidth ?? 320;
+      const contentWidth = Math.ceil(doc.body?.scrollWidth ?? 0);
+      frame.style.width = `${Math.min(Math.max(contentWidth + 2, 1), availableWidth)}px`;
+    }
     const height = Math.max(
       doc.documentElement?.scrollHeight ?? 0,
       doc.body?.scrollHeight ?? 0,
     );
     // Clamped so a malformed mail cannot stretch the page without bound; the
     // frame scrolls internally past the ceiling.
-    frame.style.height = `${Math.min(Math.max(height, 60), 12000)}px`;
+    const minimumHeight = frame.classList.contains("mail-frame-compact") ? 1 : 60;
+    frame.style.height = `${Math.min(Math.max(height, minimumHeight), 12000)}px`;
   } catch {
     // A frame we cannot measure keeps its CSS fallback height and scrolls.
   }
