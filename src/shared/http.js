@@ -60,7 +60,7 @@ export function requestMiddleware({ service, logger, metrics }) {
 
 function routeLabel(path) {
   const exact = new Set([
-    '/', '/app.css', '/app.js', '/email-history.js', '/api/query',
+    '/', '/app.css', '/app.js', '/email-history.js', '/mail-matching.js', '/api/query',
     '/admin', '/admin/', '/admin/app.css', '/admin/app.js',
     '/admin/api/login', '/admin/api/logout', '/admin/api/session', '/admin/api/bindings',
     '/admin/api/bindings/search',

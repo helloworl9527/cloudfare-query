@@ -496,6 +496,30 @@ input:focus {
   margin-top: 20px;
 }
 
+.mail-code-button {
+  margin-top: 20px;
+  min-width: 180px;
+  padding: 15px 24px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+.mail-code-button:hover,
+.mail-code-button:focus-visible {
+  background: var(--accent-deep);
+}
+
+.mail-verification-link {
+  margin-top: 20px;
+}
+
 .view-switch {
   display: inline-flex;
   gap: 2px;

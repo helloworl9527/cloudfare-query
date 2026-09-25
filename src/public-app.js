@@ -7,6 +7,7 @@ const staticFiles = {
   '/app.css': { body: readFileSync(new URL('./public/app.css', import.meta.url)), type: 'text/css; charset=utf-8' },
   '/app.js': { body: readFileSync(new URL('./public/app.js', import.meta.url)), type: 'text/javascript; charset=utf-8' },
   '/email-history.js': { body: readFileSync(new URL('./public/email-history.js', import.meta.url)), type: 'text/javascript; charset=utf-8' },
+  '/mail-matching.js': { body: readFileSync(new URL('./public/mail-matching.js', import.meta.url)), type: 'text/javascript; charset=utf-8' },
 };
 
 export function createPublicApp({ queryService, queue, metrics, logger, queryTotalTimeoutMs = 25_000 }) {

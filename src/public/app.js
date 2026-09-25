@@ -6,16 +6,21 @@ import {
   rememberSuccessfulEmail,
   removeSuccessfulEmail,
 } from "./email-history.js";
+import {
+  classifyMailSubject,
+  extractVerificationCode,
+  extractVerificationLink,
+} from "./mail-matching.js";
 
 const translations = {
   zh: {
     "page.title": "query · 邮件查询",
     "page.brandAriaLabel": "query 首页",
     "page.siteLabel": "邮件查询",
-    "hero.intro": "输入邮箱，可查看该最近 10 封邮件内容。",
+    "hero.intro": "输入邮箱，只显示当前最新一封邮件。",
     "tutorial.heading": "使用教程",
     "tutorial.step1": "在下方输入邮箱地址。",
-    "tutorial.step2": "点击“查询”，查看最近 10 封邮件。",
+    "tutorial.step2": "点击“查询”，查看当前最新一封邮件。",
     "tutorial.step3": "邮件默认以 HTML 原貌显示（沙箱隔离），远程图片等外部内容不会加载。",
     "tutorial.step4": "收件箱有新邮件时，点击“手动刷新”重新获取。",
     "query.heading": "查询条件",
@@ -37,7 +42,7 @@ const translations = {
     "status.querying": "正在查询最近邮件…",
     "status.timeout": "查询超时，请稍后手动刷新。",
     "status.connectFailed": "无法连接查询服务，请稍后重试。",
-    "results.summary": "{0} 封 · {1}（北京时间）",
+    "results.summary": "当前最新邮件",
     "mail.noSubject": "（无主题）",
     "mail.from": "发件人：{0}",
     "mail.fromUnknown": "未知",
@@ -47,10 +52,13 @@ const translations = {
     "mail.viewText": "纯文本",
     "mail.frameTitle": "邮件正文",
     "mail.empty": "这个收件箱暂时没有邮件。",
-    "mail.receivedSent": "接收 {0} · 发出 {1}（北京时间）",
-    "mail.received": "接收 {0}（北京时间）",
-    "mail.sent": "发出 {0}（北京时间）",
-    "mail.timeUnknown": "时间未知",
+    "mail.receivedAgo": "{0}分钟前收到",
+    "mail.timeUnknown": "收到时间未知",
+    "mail.copyCode": "点击复制验证码",
+    "mail.copiedCode": "已复制",
+    "mail.codeUnavailable": "未找到验证码",
+    "mail.openVerification": "打开验证链接",
+    "mail.linkUnavailable": "未找到验证链接",
     "badge.truncated": "正文已截断",
     "badge.parseFailed": "正文解析失败",
     "badge.tooLarge": "原始邮件超过解析上限",
@@ -70,10 +78,10 @@ const translations = {
     "page.title": "query · 郵件查詢",
     "page.brandAriaLabel": "query 首頁",
     "page.siteLabel": "郵件查詢",
-    "hero.intro": "輸入郵箱，可查看該最近 10 封郵件內容。",
+    "hero.intro": "輸入郵箱，只顯示目前最新一封郵件。",
     "tutorial.heading": "使用教學",
     "tutorial.step1": "在下方輸入郵箱地址。",
-    "tutorial.step2": "點擊「查詢」，查看最近 10 封郵件。",
+    "tutorial.step2": "點擊「查詢」，查看目前最新一封郵件。",
     "tutorial.step3": "郵件預設以 HTML 原貌顯示（沙箱隔離），遠端圖片等外部內容不會載入。",
     "tutorial.step4": "收件匣有新郵件時，點擊「手動重新整理」重新取得。",
     "query.heading": "查詢條件",
@@ -95,7 +103,7 @@ const translations = {
     "status.querying": "正在查詢最近郵件…",
     "status.timeout": "查詢逾時，請稍後手動重新整理。",
     "status.connectFailed": "無法連線查詢服務，請稍後重試。",
-    "results.summary": "{0} 封．{1}（北京時間）",
+    "results.summary": "目前最新郵件",
     "mail.noSubject": "（無主旨）",
     "mail.from": "寄件者：{0}",
     "mail.fromUnknown": "未知",
@@ -105,10 +113,13 @@ const translations = {
     "mail.viewText": "純文字",
     "mail.frameTitle": "郵件內容",
     "mail.empty": "這個收件匣暫時沒有郵件。",
-    "mail.receivedSent": "收到 {0}．寄出 {1}（北京時間）",
-    "mail.received": "收到 {0}（北京時間）",
-    "mail.sent": "寄出 {0}（北京時間）",
-    "mail.timeUnknown": "時間未知",
+    "mail.receivedAgo": "{0}分鐘前收到",
+    "mail.timeUnknown": "收到時間未知",
+    "mail.copyCode": "點擊複製驗證碼",
+    "mail.copiedCode": "已複製",
+    "mail.codeUnavailable": "找不到驗證碼",
+    "mail.openVerification": "開啟驗證連結",
+    "mail.linkUnavailable": "找不到驗證連結",
     "badge.truncated": "內容已截斷",
     "badge.parseFailed": "內容解析失敗",
     "badge.tooLarge": "原始郵件超過解析上限",
@@ -128,10 +139,10 @@ const translations = {
     "page.title": "query · Mail lookup",
     "page.brandAriaLabel": "query home",
     "page.siteLabel": "Mail lookup",
-    "hero.intro": "Enter an email to view its last 10 messages.",
+    "hero.intro": "Enter an email to view its newest message.",
     "tutorial.heading": "How to use it",
     "tutorial.step1": "Enter your email address below.",
-    "tutorial.step2": "Click \"Search\" to view the last 10 messages.",
+    "tutorial.step2": "Click \"Search\" to view the newest message.",
     "tutorial.step3": "Mail is shown as HTML in a sandboxed frame; remote images and other external content are never loaded.",
     "tutorial.step4": "When new mail arrives, click \"Refresh\" to fetch it.",
     "query.heading": "Query",
@@ -153,7 +164,7 @@ const translations = {
     "status.querying": "Looking up recent mail…",
     "status.timeout": "The request timed out, please refresh manually.",
     "status.connectFailed": "Could not reach the query service, please retry later.",
-    "results.summary": "{0} messages · {1} (Beijing time)",
+    "results.summary": "Newest message",
     "mail.noSubject": "(no subject)",
     "mail.from": "From: {0}",
     "mail.fromUnknown": "unknown",
@@ -163,10 +174,13 @@ const translations = {
     "mail.viewText": "Plain text",
     "mail.frameTitle": "Message body",
     "mail.empty": "This inbox has no mail yet.",
-    "mail.receivedSent": "Received {0} · Sent {1} (Beijing time)",
-    "mail.received": "Received {0} (Beijing time)",
-    "mail.sent": "Sent {0} (Beijing time)",
-    "mail.timeUnknown": "Time unknown",
+    "mail.receivedAgo": "Received {0} minutes ago",
+    "mail.timeUnknown": "Received time unknown",
+    "mail.copyCode": "Copy verification code",
+    "mail.copiedCode": "Copied",
+    "mail.codeUnavailable": "Verification code not found",
+    "mail.openVerification": "Open verification link",
+    "mail.linkUnavailable": "Verification link not found",
     "badge.truncated": "Body truncated",
     "badge.parseFailed": "Body parsing failed",
     "badge.tooLarge": "Original message exceeds parsing limit",
@@ -263,6 +277,7 @@ function setLanguage(lang) {
   renderEmailHistory();
   if (!results.hidden && lastRenderedMails) {
     renderMails(lastRenderedMails);
+    resultsSummary.textContent = t("results.summary");
   }
 }
 
@@ -279,17 +294,6 @@ const statusBox = document.querySelector("#query-status");
 const results = document.querySelector("#results");
 const resultsSummary = document.querySelector("#results-summary");
 const mailList = document.querySelector("#mail-list");
-
-const beijingDateTime = new Intl.DateTimeFormat("zh-CN", {
-  timeZone: "Asia/Shanghai",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hour12: false,
-});
 
 let lastSuccessfulExternalId = "";
 let activeController = null;
@@ -377,9 +381,7 @@ async function runQuery(externalId, isRefresh) {
       throw new RequestError(response.status, errorMessage(payload));
     }
 
-    const mails = extractMails(payload).slice(0, 10);
-    const responseData = isRecord(payload) && isRecord(payload.data) ? payload.data : payload;
-    const refreshedAt = isRecord(responseData) ? responseData.refreshed_at : null;
+    const mails = newestMailOnly(extractMails(payload));
     renderMails(mails);
     lastSuccessfulExternalId = externalId;
     successfulExternalIds = rememberSuccessfulEmail(
@@ -390,7 +392,7 @@ async function runQuery(externalId, isRefresh) {
     renderEmailHistory();
     refreshButton.disabled = false;
     results.hidden = false;
-    resultsSummary.textContent = t("results.summary", mails.length, formatDate(refreshedAt) || formatDate(new Date()));
+    resultsSummary.textContent = t("results.summary");
     hideStatus();
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
@@ -489,6 +491,23 @@ function renderMails(mails) {
   mailList.append(fragment);
 }
 
+window.setInterval(() => {
+  if (!results.hidden && lastRenderedMails?.length) {
+    const time = mailList.querySelector(".mail-time");
+    if (time) time.textContent = displayMailTime(lastRenderedMails[0]);
+  }
+}, 30_000);
+
+function newestMailOnly(mails) {
+  if (mails.length === 0) return [];
+  return [mails.reduce((latest, candidate) => {
+    const latestTime = Date.parse(latest.received_at ?? latest.created_at ?? "");
+    const candidateTime = Date.parse(candidate.received_at ?? candidate.created_at ?? "");
+    return Number.isFinite(candidateTime) && (!Number.isFinite(latestTime) || candidateTime > latestTime)
+      ? candidate : latest;
+  })];
+}
+
 function createMailCard(mail) {
   const item = document.createElement("li");
   item.className = "mail-card";
@@ -524,8 +543,71 @@ function createMailCard(mail) {
     item.append(badgeRow);
   }
 
-  item.append(createMailBody(mail));
+  item.append(createMatchedMailBody(mail));
   return item;
+}
+
+function createMatchedMailBody(mail) {
+  const kind = classifyMailSubject(mail.subject);
+  if (kind === "verification_code") {
+    const code = extractVerificationCode(mail);
+    if (code) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "mail-code-button";
+      button.textContent = code;
+      button.title = t("mail.copyCode");
+      button.setAttribute("aria-label", `${t("mail.copyCode")}: ${code}`);
+      button.addEventListener("click", async () => {
+        try {
+          await copyText(code);
+          button.title = t("mail.copiedCode");
+        } catch {
+          button.title = t("mail.copyCode");
+        }
+      });
+      return button;
+    }
+    const unavailable = document.createElement("p");
+    unavailable.className = "mail-body";
+    unavailable.textContent = t("mail.codeUnavailable");
+    return unavailable;
+  }
+  if (kind === "verification_link") {
+    const link = extractVerificationLink(mail);
+    if (link) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "mail-verification-link";
+      const frame = createMailFrame(link.html);
+      frame.title = t("mail.openVerification");
+      wrapper.append(frame);
+      return wrapper;
+    }
+    const unavailable = document.createElement("p");
+    unavailable.className = "mail-body";
+    unavailable.textContent = t("mail.linkUnavailable");
+    return unavailable;
+  }
+  return createMailBody(mail);
+}
+
+async function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+  const input = document.createElement("textarea");
+  input.value = value;
+  input.setAttribute("readonly", "");
+  input.style.position = "fixed";
+  input.style.opacity = "0";
+  document.body.append(input);
+  try {
+    input.select();
+    if (!document.execCommand("copy")) throw new Error("copy failed");
+  } finally {
+    input.remove();
+  }
 }
 
 // HTML is the default view whenever the server produced a sanitized body; the
@@ -691,18 +773,11 @@ function escapeHtml(value) {
 }
 
 function displayMailTime(mail) {
-  const received = formatDate(mail.received_at ?? mail.receivedAt ?? mail.created_at);
-  const sent = formatDate(mail.sent_at ?? mail.sentAt);
-  if (received && sent) {
-    return t("mail.receivedSent", received, sent);
-  }
-  if (received) {
-    return t("mail.received", received);
-  }
-  if (sent) {
-    return t("mail.sent", sent);
-  }
-  return t("mail.timeUnknown");
+  const value = mail.received_at ?? mail.receivedAt ?? mail.created_at;
+  const received = value ? new Date(value).getTime() : NaN;
+  if (!Number.isFinite(received)) return t("mail.timeUnknown");
+  const minutes = Math.max(0, Math.floor((Date.now() - received) / 60_000));
+  return t("mail.receivedAgo", minutes);
 }
 
 function mailBadges(mail) {
@@ -772,17 +847,6 @@ function formatSender(value) {
     return address || name;
   }
   return "";
-}
-
-function formatDate(value) {
-  if (value === null || value === undefined || value === "") {
-    return "";
-  }
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-  return beijingDateTime.format(date).replaceAll("/", "-");
 }
 
 function safeText(value) {
